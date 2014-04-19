@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <string>
 #include <ctype.h>
 #include "btree.h"
@@ -12,7 +13,7 @@ btree *tree;
 bool handleCommand(char *command, int len){
 	char *cmd = strtok(command, " ");
 	for(int i = 0; cmd[i]; i++){
-		cmd[i] = tolower(cmd[i]);
+		cmd[i] = tolower((int)cmd[i]);
 	}
 	string cmdStr (cmd);
 	bool quit = false;
@@ -29,12 +30,12 @@ bool handleCommand(char *command, int len){
 		int node = atoi(num);
 		tree->deleteNode(node);
 	}else if(cmdStr == "getjson"){
-		tree->getJson(node);
+		tree->getJson();
 	}else if(cmdStr == "new"){
 		char *num = strtok(NULL, " ");
 		int node = atoi(num);
 		delete tree;
-		tree = new btree(num);
+		//tree = new btree(num);
 	}else if(cmdStr == "quit"){
 		quit = true;
 	}
@@ -42,12 +43,13 @@ bool handleCommand(char *command, int len){
 }
 
 int main(int argc, char **argv){
-	int order = atoi(argv[1]);
 	if (argc == 2){
+		int order = atoi(argv[1]);
 		tree = new btree(order);
 	}else if(argc == 3){
+		int order = atoi(argv[1]);
 		tree = new btree(order);
-		ifstream in(file);
+		ifstream in(argv[2]);
 		char command[100];
 		while(in.good()){
 			in.getline(command, 100);
@@ -63,7 +65,7 @@ int main(int argc, char **argv){
 		cout << ">  ";
 		char command[100];
 		cin >> command;
-		handleCommand(command, 100);
+		quit = handleCommand(command, 100);
 	}
 	delete tree;
 	return 0;
