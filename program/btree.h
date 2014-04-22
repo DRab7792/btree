@@ -14,11 +14,12 @@ class btree{
 	private:
 		int order;
 		node *root;
+		string json;
 	public:
 		btree(int treeOrd);
 		~btree();
 		string getJson();
-		void insert(int num);
+		bool insert(int num);
 		bool deleteNode(int num);
-		void select(int num);
+		bool select(int num);
 };

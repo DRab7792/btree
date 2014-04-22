@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <title>B Trees</title>
+
+  <link rel="stylesheet" type="text/css" href="resources/jquery-ui-1.9.2.custom.css">
+  <link rel="stylesheet" type="text/css" href="resources/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="resources/bootstrap.min.css">
+  
+  <script type="text/javascript" src="resources/jquery-2.0.0.min.js"></script>
+  <script type="text/javascript" src="resources/jquery.form.min.js"></script>
+  <script type="text/javascript" src="resources/d3.min.js"></script>
+  <script type="text/javascript" src="resources/dagre.min.js"></script>
+  <script src="resources/dagre-d3-simple.js"></script>
+
+  <link rel="stylesheet/less" type="text/css" href="css/style.less" />
+  <script src="resources/less.js" type="text/javascript"></script>
+</head>
+
+<body>
+<h1>The Algorithms of B Trees</h1>
+<div class="container">
+  <div id="contents" class="section">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li>What is a B Tree?</li>
+      <li>What is a B+ Tree?</li>
+      <li>Why are they important?</li>
+      <li>The algorithms
+        <ul>
+          <li>Insert</li>
+          <li>Search</li>
+          <li>Delete</li>
+        </ul>
+      </li>
+      <li>Implementation and Testing</li>
+    </ol>
+  </div>
+  <div id="attach">
+    <textarea id="commands"></textarea>
+    <svg class="main-svg" id="svg-canvas"></svg>
+  </div>
+</div>
+
+
+
+<script>
+
+  $.post("handler.php", {action: "start"}, function(data){
+    var info = JSON.parse(data);
+    if (info["action"]["success"] == false) alert ("Error starting b tree simulator");
+  });
+
+  $("#commands").text("> ");
+  $("#commands").keyup(function(e){
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if(code == 13) {
+      var content = $("#commands").val();
+      var pattern = /\n?\n/g;
+      var index = 0;
+      var correctIndex = 0; //Get second to last index of line
+      while (pattern.test(content)==true) { 
+        correctIndex = index;
+        index = pattern.lastIndex;
+      }
+      var start = (correctIndex+2);
+      var len = index - start;
+      var lastLine = content.substr(start, len);
+      console.log(lastLine);
+      $.post("handler.php", {str: lastLine}, function(data){
+        data = JSON.parse(data);
+        if (data["action"]["result"]){
+          var graphData = data["action"]["result"];
+          console.log(graphData);
+          handleGraph(graphData);
+        }
+        var message = data["action"]["success"];
+        $("#commands").val($("#commands").val()+message+"\n");
+        $("#commands").val($("#commands").val()+"> ");
+      });
+    }
+  });
+
+  function handleGraph(data) {
+      var dataParsed = (data!=null) ? data: 
+      [
+        {
+          "keys": ["32", "64", "128"], 
+          "children": [
+            {
+              "keys": ["16", "24", "30"],
+              "children": []
+            },
+            {
+              "keys": ["72", "88", "95"],
+              "children": []
+            },
+            {
+              "keys": ["134", "162", "184"],
+              "children": []
+            }
+          ]
+        }
+      ];
+      // var dataParsed = JSON.parse(data);
+
+      var nodes = {};
+      var edges = [];
+
+      dataParsed.forEach(function (e) {
+        populate(e, nodes, edges);
+      });
+
+      renderJSObjsToD3(nodes, edges, ".main-svg");
+  }
+
+  function populate(data, nodes, edges) {
+    var nodeID = Object.keys(nodes).length;
+
+    var labelStr = "";
+    for (var i = 0; i< data.keys.length; i++) {
+      if (i!=(data.keys.length-1)) labelStr += data.keys[i] + "  ";
+      else labelStr += data.keys[i];
+    };
+
+    var newNode = {
+      label: labelStr,
+      id: nodeID + ""
+    };
+
+    // var classes = ["type-" + data.data.type];
+    // if (data.data.ne) {
+    //   classes.push("ne-" + data.data.ne);
+    // }
+
+    // newNode.nodeclass = classes.join(" ");
+
+    nodes[nodeID] = newNode;
+
+    data.children.forEach(function (child) {
+      var newChild = populate(child, nodes, edges);
+
+      edges.push({
+        source: newNode.id,
+        target: newChild.id,
+        id: newNode.id + "-" + newChild.id
+      });
+    });
+
+    return newNode;
+  }
+
+
+  function buildGraphData(node, nodes, links) {
+
+    var index = nodes.length;
+    nodes.push({
+      name: node.data.content,
+      group: 1
+    });
+
+    node.children.forEach(function (e) {
+      links.push({
+        source: index,
+        target: nodes.length,
+        value: 2
+      });
+      buildGraphData(e, nodes, links);
+    });
+  }
+
+  handleGraph();
+
+</script>
+
+
+</body>
+
+</html>

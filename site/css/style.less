@@ -1,0 +1,164 @@
+@green: #D1E751;
+@lightBlue: #4DBCE9;
+@darkBlue: #137EAA;
+@white: #fff;
+@black: #000;
+@textSize: 20;
+
+@font-face
+{
+  font-family: lobster;
+  src: url('../fonts/LobsterTwo-Bold.otf');
+}
+
+html{
+  padding: 0px;
+  margin: 0px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-size: @textSize*1px;
+  font-family: helvetica;
+  background-color: @lightBlue;
+  background-image: url('../img/bg2good.jpg');
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+#contents{
+  li{
+    margin: 5px 0px;
+  }
+}
+
+#commands:hover, #commands:active, #commands:focus{
+  outline: 0px;
+}
+
+#commands{
+  border-radius: 0px;
+  width: 970px;
+  height: 100px;
+  color: @lightBlue;
+  font-size: @textSize*1px;
+  font-family: helvetica;
+  overflow-y: auto;
+  border-bottom: 1px solid @black;
+  border-top: 1px solid @black;
+  resize: vertical;
+  border-right: 0px;
+  border-left: 0px;
+  padding: 5px 15px;
+  position: relative;
+}
+
+.section{
+  margin: 10px 0px;
+  padding: 15px;
+  border-bottom: 1px solid @black;
+}
+
+h3{
+  text-align:center;
+  display:block;
+  font-size: 50px;
+  position: relative;
+  text-shadow: 2px 2px 0px @green;
+  color: @darkBlue;
+  font-family: arial;
+}
+
+h1{
+  text-align:center;
+  display:block;
+  font-size: 90px;
+  position: relative;
+  /*position: fixed;
+  top: 0px;
+  width: 100%;
+  z-index: 1000;*/
+  line-height: 90px;
+  text-shadow: 5px 5px 0px @green;
+  color: @darkBlue;
+  font-family: lobster;
+  margin: 20px 0px;
+}
+
+.container{
+  border-radius: 10px;
+  position: relative;
+  background-color: @white;
+  width: 1000px;
+  min-height: 1500px;
+  margin: 150px auto;
+}
+
+.main-svg {
+  /*border-top: 1px solid @black;*/
+  border-bottom: 1px solid @black; 
+  background-color: @white;
+  height: 500px;
+  width: 100%;
+  margin: 20px 0px;
+}
+
+.label > rect {
+  fill: @lightBlue;
+}
+
+
+text {
+  font-weight: 300;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+
+.node > rect {
+  stroke-width: 8px;
+  stroke: @darkBlue;
+}
+
+#arrowhead{
+  fill: @darkBlue;
+}
+
+.edge rect {
+  fill: #fff
+}
+
+.edge path {
+  fill: none;
+  stroke: @darkBlue;
+  stroke-width: 2.5px;
+}
+
+tspan{
+  color: white !important;
+  word-spacing: 25px;
+}
+
+.legend-svg {
+  position: fixed;
+  /*top: 150px;*/
+  /*left: 0;*/
+  height: 60px;
+  width: 600px;
+  /*width: 100%;*/
+  /*border: 1px solid #999;*/
+}
+
+textarea {
+  border: 1px solid #999999;
+  width: 100%;
+  margin: 5px 0;
+  padding: 3px;
+}
+
+.legend {
+  stroke-width: 3px;
+  stroke: #333;
+  fill: none;
+  opacity: 0.5;
+}

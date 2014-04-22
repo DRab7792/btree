@@ -8,16 +8,16 @@ bool btree::deleteNode(int num){
 
 }
 
-void btree::insert(int num){
+bool btree::insert(int num){
 
 }
 
-void btree::select(int num){
+bool btree::select(int num){
 
 }
 
 string btree::getJson(){
-
+	return json;
 } 
 
 btree::~btree(){
