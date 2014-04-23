@@ -6,6 +6,7 @@
 #include <string>
 #include <ctype.h>
 #include <time.h> 
+#include <cstring>
 #include <cstdio>
 #include <ctime>
 #include "btree.h"
@@ -14,74 +15,89 @@ using namespace std;
 btree *tree;
 
 bool handleCommand(char *command, int len){
-	char *cmd = strtok(command, " ");
-	for(int i = 0; cmd[i]; i++){
-		cmd[i] = tolower((int)cmd[i]);
+	string cmd (command);
+	int delim = cmd.find(" ");
+	string argStr, cmdStr;
+	int arg = 2;
+	if (delim != -1){
+		argStr = cmd.substr((delim+1));
+		char *cArgStr = new char [argStr.length()];
+		strcpy(cArgStr, argStr.c_str());
+		arg = atoi(cArgStr);
+		delete cArgStr;
+		cmdStr = cmd.substr(0, delim);
+	}else{
+		cmdStr = cmd;
 	}
-	string cmdStr (cmd);
-	bool quit = false;
 	bool success = false;
 	if(cmdStr == "new"){
-		char *num = strtok(NULL, " ");
-		int order = atoi(num);
 		if (tree != NULL) delete tree;
-		tree = new btree(order);
-		cout << "Tree created"<<endl;
+		tree = new btree(arg);
+		cout << "Tree created";
 	}else if(cmdStr == "run"){
-		char *file = strtok(NULL, " ");
-		ifstream in(file);
-		char command[100];
-		while(in.good()){
-			in.getline(command, 100);
-			handleCommand(command, 100);
+		ifstream in(argStr.c_str());
+		if (in.good()){
+			char curCmd[100];
+			while(in.good()){
+				in.getline(curCmd, 100);
+				cout << curCmd<<endl;
+				if (strcmp(curCmd, "\n") > 0) handleCommand(curCmd, 100);
+			}
+			cout << "End File";
+		}else{
+			cout << "File not found";
 		}
 		in.close();
-		cout << "End File"<<endl;
 	}else if(cmdStr == "quit"){
-		quit = true;
-	}
-	if (tree!=NULL){
+		if (tree) delete tree;
+		cout << "Goodbye"<<endl;
+		return true;
+	}else if (tree!=NULL){
 		if (cmdStr == "insert"){
-			char *num = strtok(NULL, " ");
-			int node = atoi(num);
-			success = tree->insert(node);
+			success = tree->insert(arg);
 		}else if(cmdStr == "select"){
-			char *num = strtok(NULL, " ");
-			int node = atoi(num);
-			success = tree->select(node);
+			success = tree->select(arg);
 		}else if(cmdStr == "delete"){
-			char *num = strtok(NULL, " ");
-			int node = atoi(num);
-			success = tree->deleteNode(node);
+			success = tree->deleteNode(arg);
 		}else if(cmdStr == "getjson"){
 			cout << tree->getJson()<<endl;
 		}
 		if (success){
-			cout << "Command executed"<<endl;
+			cout << "Command executed";
 		}
+	}else if(tree == NULL && (cmdStr=="insert" || cmdStr=="select" || cmdStr=="delete" || cmdStr=="getjson")){
+		cout << "Please initiate b tree";
 	}else{
-		cout << "Please initiate b tree"<<endl;
+		cout << "Invalid command";
 	}
-	return quit;
+	cout <<endl<<"> ";
+	return false;
 }
 
 int main(int argc, char **argv){
 	tree = NULL;
 	bool timer = false;
-	int endtime = 0;
+	time_t cur;
+	time_t end;
 	if (argc == 2){
 		timer = true;
 		int i = atoi(argv[1]);
-		endtime=clock() + (i * CLOCKS_PER_SEC); 
+		time(&end);
+		end += i;
 	}
 	bool quit = false;
+	cout << "> ";
 	while (quit == false){
-		cout << ">  ";
+		if (timer){
+			time(&cur);
+			if (cur > end){
+				cout << "Sorry time is up"<<endl;
+				break;
+			}
+		}
 		char command[100];
-		cin >> command;
+		cin.getline(command, 100);
 		quit = handleCommand(command, 100);
-		if (timer && clock() > endtime) quit = true;
 	}
-	if (tree != NULL) delete tree;
 	return 0;
 }
