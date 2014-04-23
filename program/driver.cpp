@@ -23,9 +23,9 @@ bool handleCommand(char *command, int len){
 	bool success = false;
 	if(cmdStr == "new"){
 		char *num = strtok(NULL, " ");
-		int node = atoi(num);
+		int order = atoi(num);
 		if (tree != NULL) delete tree;
-		tree = new btree(num);
+		tree = new btree(order);
 		cout << "Tree created"<<endl;
 	}else if(cmdStr == "run"){
 		char *file = strtok(NULL, " ");
@@ -40,7 +40,7 @@ bool handleCommand(char *command, int len){
 	}else if(cmdStr == "quit"){
 		quit = true;
 	}
-	if (btree!=NULL){
+	if (tree!=NULL){
 		if (cmdStr == "insert"){
 			char *num = strtok(NULL, " ");
 			int node = atoi(num);
