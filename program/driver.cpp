@@ -6,6 +6,8 @@
 #include <string>
 #include <ctype.h>
 #include <time.h> 
+#include <cstdio>
+#include <ctime>
 #include "btree.h"
 using namespace std;
 
@@ -22,7 +24,7 @@ bool handleCommand(char *command, int len){
 	if(cmdStr == "new"){
 		char *num = strtok(NULL, " ");
 		int node = atoi(num);
-		if (tree!= NULL) delete tree;
+		if (tree != NULL) delete tree;
 		tree = new btree(num);
 		cout << "Tree created"<<endl;
 	}else if(cmdStr == "run"){
@@ -64,11 +66,13 @@ bool handleCommand(char *command, int len){
 }
 
 int main(int argc, char **argv){
+	tree = NULL;
 	bool timer = false;
+	int endtime = 0;
 	if (argc == 2){
 		timer = true;
 		int i = atoi(argv[1]);
-		int endtime=clock() + i * CLK_TCK; 
+		endtime=clock() + (i * CLOCKS_PER_SEC); 
 	}
 	bool quit = false;
 	while (quit == false){
