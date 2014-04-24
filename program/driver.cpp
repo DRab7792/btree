@@ -14,7 +14,9 @@ using namespace std;
 
 btree *tree;
 
-bool handleCommand(char *command, int len){
+void batch(ostream &out, string argStr);
+
+bool handleCommand(ostream &out, char *command, int len){
 	string cmd (command);
 	int delim = cmd.find(" ");
 	string argStr, cmdStr;
@@ -33,24 +35,12 @@ bool handleCommand(char *command, int len){
 	if(cmdStr == "new"){
 		if (tree != NULL) delete tree;
 		tree = new btree(arg);
-		cout << "Tree created";
+		out << "Tree created";
 	}else if(cmdStr == "run"){
-		ifstream in(argStr.c_str());
-		if (in.good()){
-			char curCmd[100];
-			while(in.good()){
-				in.getline(curCmd, 100);
-				cout << curCmd<<endl;
-				if (strcmp(curCmd, "\n") > 0) handleCommand(curCmd, 100);
-			}
-			cout << "End File";
-		}else{
-			cout << "File not found";
-		}
-		in.close();
+		batch(out, argStr);
 	}else if(cmdStr == "quit"){
 		if (tree) delete tree;
-		cout << "Goodbye"<<endl;
+		out << "Goodbye"<<endl;
 		return true;
 	}else if (tree!=NULL){
 		if (cmdStr == "insert"){
@@ -63,15 +53,31 @@ bool handleCommand(char *command, int len){
 			cout << tree->getJson()<<endl;
 		}
 		if (success){
-			cout << "Command executed";
+			out << "Command executed";
 		}
 	}else if(tree == NULL && (cmdStr=="insert" || cmdStr=="select" || cmdStr=="delete" || cmdStr=="getjson")){
-		cout << "Please initiate b tree";
+		out << "Please initiate b tree";
 	}else{
-		cout << "Invalid command";
+		out << "Invalid command";
 	}
-	cout <<endl<<"> ";
+	out <<endl<<"> ";
 	return false;
+}
+
+void batch(ostream &out, string argStr){
+	ifstream in(argStr.c_str());
+	if (in.good()){
+		char curCmd[100];
+		while(in.good()){
+			in.getline(curCmd, 100);
+			cout << curCmd<<endl;
+			if (strcmp(curCmd, "\n") > 0) handleCommand(out, curCmd, 100);
+		}
+		out << "End File";
+	}else{
+		out << "File not found";
+	}
+	in.close();
 }
 
 int main(int argc, char **argv){
@@ -79,25 +85,22 @@ int main(int argc, char **argv){
 	bool timer = false;
 	time_t cur;
 	time_t end;
-	if (argc == 2){
-		timer = true;
-		int i = atoi(argv[1]);
-		time(&end);
-		end += i;
-	}
-	bool quit = false;
-	cout << "> ";
-	while (quit == false){
-		if (timer){
-			time(&cur);
-			if (cur > end){
-				cout << "Sorry time is up"<<endl;
-				break;
-			}
+	if (argc > 1){
+		string file(argv[1]);
+		if (argc==3){
+			ofstream out(argv[2]);
+			batch(cout, file);
+			out << tree->getJson() <<endl;
+			out.close();
+		}else batch(cout, file);	
+	}else{
+		bool quit = false;
+		cout << "> ";
+		while (quit == false){
+			char command[100];
+			cin.getline(command, 100);
+			quit = handleCommand(cout, command, 100);
 		}
-		char command[100];
-		cin.getline(command, 100);
-		quit = handleCommand(command, 100);
 	}
 	return 0;
 }
