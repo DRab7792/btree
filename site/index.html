@@ -50,17 +50,13 @@
 
 <script>
 
-  $.post("handler.php", {action: "start"}, function(data){
-    var info = JSON.parse(data);
-    if (info["action"]["success"] == false) alert ("Error starting b tree simulator");
-  });
-
   $("#commands").text("> ");
   $("#commands").keyup(function(e){
     var code = (e.keyCode ? e.keyCode : e.which);
     if(code == 13) {
-      var content = $("#commands").val();
-      var pattern = /\n?\n/g;
+      	var content = $("#commands").val();
+	content = content.replace(/>\s/g,'');
+/*      var pattern = /\n?\n/g;
       var index = 0;
       var correctIndex = 0; //Get second to last index of line
       while (pattern.test(content)==true) { 
@@ -71,16 +67,17 @@
       var len = index - start;
       var lastLine = content.substr(start, len);
       console.log(lastLine);
-      $.post("handler.php", {str: lastLine}, function(data){
-        data = JSON.parse(data);
-        if (data["action"]["result"]){
-          var graphData = data["action"]["result"];
-          console.log(graphData);
-          handleGraph(graphData);
-        }
-        var message = data["action"]["success"];
-        $("#commands").val($("#commands").val()+message+"\n");
-        $("#commands").val($("#commands").val()+"> ");
+*/    $.ajax({
+		url: "handler.php", 
+		type: "POST",
+		dataType: "text",
+		data: content,
+		success: function(data){
+			data = JSON.parse(data);
+			console.log(data);
+			handleGraph(data);
+			$("#commands").val($("#commands").val()+"> ");
+		}
       });
     }
   });
