@@ -10,13 +10,16 @@ bool btree::deleteNode(int num){
 }
 
 void btree::split(node *loc, int num){
-	//Find median
+	//Find median after adding new key to the mix
+	bool inserted = false;
 	for (vector<int>::iterator it = loc->keys.begin(); it != loc->keys.end(); it++){ 
 		if ((*it) > num){
 			loc->keys.insert(it, num);
+			inserted = true;
 			break;
 		}
 	}
+	if (!inserted) loc->keys.push_back(num);
 	int medianLoc = loc->keys.size()/2;
 	int median = loc->keys[medianLoc];
 	//Split based on median
@@ -33,14 +36,15 @@ void btree::split(node *loc, int num){
 	loc->pointers.push_back(right);
 	loc->keys.clear();
 	loc->keys.push_back(median);
-	display();
+		
 }
 
-void btree::display(){
-}
 
 bool btree::insert(int num){
 	node *loc = traverse(root, num);
+	/*cout << "Node already contains: ";
+	for (vector<int>::iterator it = loc->keys.begin();it!=loc->keys.end();it++) cout << (*it)<<", ";
+	cout <<endl;*/
 	//Nothing in tree
 	if (loc->keys.size()==0){
 		cout << "Node is empty procedure"<<endl;
@@ -61,8 +65,8 @@ bool btree::insert(int num){
 			}
 		}
 		if (!inserted) loc->keys.push_back(num);
-		for (vector<int>::iterator it = loc->keys.begin();it!= loc->keys.end();it++) cout << *it << " ";
-		cout <<endl;
+		//for (vector<int>::iterator it = loc->keys.begin();it!= loc->keys.end();it++) cout << *it << " ";
+		//cout <<endl;
 		return true;
 	//Leaf node is full
 	}else{
@@ -79,7 +83,7 @@ node *btree::traverse(node *cur, int num){
 	for (vector<int>::iterator it = cur->keys.begin(); it != cur->keys.end(); it++){
 		if (num < *it){
 			//Search further into the tree
-			return traverse(cur->pointers[count], num);
+			if (cur->pointers[count]) return traverse(cur->pointers[count], num);
 		}else if (num == (*it)){
 			//Key is in this node
 			return cur;
