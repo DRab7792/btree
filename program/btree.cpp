@@ -92,8 +92,27 @@ bool btree::select(int num){
 
 }
 
+string btree::jsonAux(node *cur){
+	stringstream ss;
+	ss << "{";
+	ss << "\"keys\": [";
+	for (vector<int>::iterator it = cur->keys.begin(); it!= cur->keys.end();it++){
+		ss << "\"" << *it << "\"";
+		if (*it!=cur->keys.back()) ss << ", ";
+	}
+	ss << "], \"children\": [";
+	for (vector<struct node*>::iterator it = cur->pointers.begin(); it!=cur->pointers.end();it++){
+		ss << jsonAux(*it);
+		if (*it != cur->pointers.back()) ss << ", ";
+	}
+	ss << "]}";
+	return ss.str();
+}
+
 string btree::getJson(){
-	return json;
+	stringstream ss;
+	ss << "[" << jsonAux(root) << "]";
+	return ss.str();
 } 
 
 btree::~btree(){

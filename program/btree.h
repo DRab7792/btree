@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 using namespace std;
 
 struct node{
@@ -14,7 +15,7 @@ class btree{
 	private:
 		int order;
 		node *root;
-		string json;
+		string jsonAux(node *cur);
 		void split(node *loc, int num);
 		node *traverse(node *cur, int num);
 	public:
