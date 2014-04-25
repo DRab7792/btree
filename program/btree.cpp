@@ -12,6 +12,7 @@ bool btree::deleteNode(int num){
 
 void btree::split(node *loc, int num, vector<struct node*> leftData, vector<struct node*> rightData){
 	//Find median after adding new key to the mix
+	cout << "Finding median"<<endl;
 	bool inserted = false;
 	for (vector<int>::iterator it = loc->keys.begin(); it != loc->keys.end(); it++){ 
 		if ((*it) > num){
@@ -24,6 +25,7 @@ void btree::split(node *loc, int num, vector<struct node*> leftData, vector<stru
 	int medianLoc = loc->keys.size()/2;
 	int median = loc->keys[medianLoc];
 	//Split based on median
+	cout << "Splitting based on median"<<endl;
 	node *left = new node();
 	node *right = new node();
 	left->parent = loc;
@@ -35,37 +37,45 @@ void btree::split(node *loc, int num, vector<struct node*> leftData, vector<stru
 			right->keys.push_back(*it);
 		}
 	}
-	loc->pointers.push_back(left);
-	loc->pointers.push_back(right);
-	loc->keys.clear();
-	loc->keys.push_back(median);
+	//Solution: Deep Copy so the pointers arent deleted
 	for (vector<struct node*>::iterator it = leftData.begin(); it!=leftData.end();it++) left->pointers.push_back(*it);
 	for (vector<struct node*>::iterator it = rightData.begin(); it!=rightData.end();it++) right->pointers.push_back(*it);
 	//Push back up so higher nodes are filled
 	if (loc->parent == NULL){
+		cout << "create new root"<<endl;
 		node *temp = new node();
 		temp->parent = NULL;
 		root->parent = temp;
 		root = temp;		
 	}
+	cout << "Starting recursive split"<<endl;
 	if (loc->parent->keys.size() < order){
 		loc->parent->keys.push_back(median);
 		left->parent = loc->parent;
 		right->parent = loc->parent;
 		loc->parent->pointers.push_back(left);
 		loc->parent->pointers.push_back(right);
-		for (vector<struct node*>::iterator it = loc->parent->pointers.begin(); it!=loc->parent->pointers.end();it++) if ((*it)==loc) loc->parent->pointers.erase(it);
+		for (vector<struct node*>::iterator it = loc->parent->pointers.begin(); it!=loc->parent->pointers.end();){  
+			if ((*it)==loc){
+				loc->parent->pointers.erase(it);
+			}else ++it;
+		}
 		delete loc;
 	}else{
-		cout <<getJson();
-		//for (vector<struct node*>::iterator it = loc->parent->pointers.begin(); it!=loc->parent->pointers.end();it++){ 
-		//	if ((*it)==loc) loc->parent->pointers.erase(it);
-		//}
+	
+		for (vector<struct node*>::iterator it = loc->parent->pointers.begin(); it!=loc->parent->pointers.end();){  
+			if ((*it)==loc){
+				loc->parent->pointers.erase(it);
+			}else ++it;
+		}
+		
 		if (loc->parent->keys[0] < loc->keys[0]){
 			split(loc->parent, median, loc->parent->pointers, loc->pointers);
 		}else{
 			split(loc->parent, median, loc->pointers, loc->parent->pointers);
 		}
+	
+		delete loc;
 	}
 }
 
@@ -136,10 +146,14 @@ string btree::jsonAux(node *cur){
 	stringstream ss;
 	ss << "{";
 	ss << "\"keys\": [";
-	for (vector<int>::iterator it = cur->keys.begin(); it!= cur->keys.end();it++){
+	int count = 0;
+	for (vector<int>::iterator it = cur->keys.begin(); it!= cur->keys.end() && count <= order;it++){
 		ss << "\"" << *it << "\"";
+		cout << (*it)<<", ";
+		count ++;
 		if (*it!=cur->keys.back()) ss << ", ";
 	}
+	cout <<endl;
 	ss << "], \"children\": [";
 	for (vector<struct node*>::iterator it = cur->pointers.begin(); it!=cur->pointers.end();it++){
 		ss << jsonAux(*it);

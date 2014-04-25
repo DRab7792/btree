@@ -5,4 +5,5 @@ insert 3
 insert 4
 insert 5
 insert 6
+getjson
 insert 7
