@@ -10,7 +10,7 @@ bool btree::deleteNode(int num){
 
 }
 
-void btree::split(node *loc, int num, vector<struct node*> leftData, vector<struct node*> rightData){
+void btree::split(node *loc, int num, vector<struct node*> data){
 	//Find median after adding new key to the mix
 	bool inserted = false;
 	for (vector<int>::iterator it = loc->keys.begin(); it != loc->keys.end(); it++){ 
@@ -39,12 +39,31 @@ void btree::split(node *loc, int num, vector<struct node*> leftData, vector<stru
 	}
 	loc->keys.clear();
 	loc->keys.push_back(median);
-	right->pointers = rightData;
-	left->pointers = leftData;
-	//Update the parent's of the children nodes
-	for (vector<struct node*>::iterator it = right->pointers.begin();it!=right->pointers.end();it++) (*it)->parent = right;
-	for (vector<struct node*>::iterator it = left->pointers.begin();it!=left->pointers.end();it++) (*it)->parent = left;
-
+	//Add the children back, assign them to their parents in the proper order
+	if (data.size()>0){
+		node *parent;
+		for (vector<struct node*>::iterator it = data.begin(); it!= data.end();it++){
+			if ((*it)->keys[0] > median){ 
+				parent = right;
+			}else{
+				parent = left;
+			}
+			(*it)->parent = parent;
+			if (parent->pointers.size()==0){
+				parent->pointers.push_back(*it);
+			}else{
+				bool inserted = false;
+				for (vector<struct node*>::iterator i=parent->pointers.begin();i!=parent->pointers.end();i++){
+					if ((*i)->keys[0] > (*it)->keys[0]){
+						parent->pointers.insert(i, *it);
+						inserted = true;
+						break;
+					}
+				}
+				if (!inserted) parent->pointers.push_back(*it);
+			}
+		}
+	}
 	//Push back up so higher nodes are filled
 	if (loc->parent == NULL){
 		node *temp = new node();
@@ -53,7 +72,6 @@ void btree::split(node *loc, int num, vector<struct node*> leftData, vector<stru
 		root = temp;		
 	}
 	if (loc->parent->keys.size() < order){
-		cout << "Median insert start"<<endl;
 		bool inserted = false;
 		for (vector<int>::iterator it = loc->parent->keys.begin();it!=loc->parent->keys.end();it++){
 			if ((*it) > median){
@@ -66,7 +84,6 @@ void btree::split(node *loc, int num, vector<struct node*> leftData, vector<stru
 		left->parent = loc->parent;
 		right->parent = loc->parent;
 		inserted = false;
-		cout << "Parent pointers insert start"<<endl;
 		for (vector<struct node*>::iterator it = loc->parent->pointers.begin(); it!=loc->parent->pointers.end();it++){
 			if ((*it)->keys.size() > 0 && (*it)->keys[0] > left->keys[0]){
 				it = loc->parent->pointers.insert(it, right);
@@ -79,7 +96,6 @@ void btree::split(node *loc, int num, vector<struct node*> leftData, vector<stru
 			loc->parent->pointers.push_back(left);
 			loc->parent->pointers.push_back(right);
 		}
-		cout << "end"<<endl;
 		for (vector<struct node*>::iterator it = loc->parent->pointers.begin(); it!=loc->parent->pointers.end();){  
 			if ((*it)==loc){
 				loc->parent->pointers.erase(it);
@@ -97,12 +113,10 @@ void btree::split(node *loc, int num, vector<struct node*> leftData, vector<stru
 				++it;
 			}
 		}
-		if (loc->parent->keys[0] < loc->keys[0]){
-			split(loc->parent, median, loc->parent->pointers, loc->pointers);
-		}else{
-			split(loc->parent, median, loc->pointers, loc->parent->pointers);
-		}
-	
+		vector<struct node*> children;
+		for (vector<struct node*>::iterator it = loc->parent->pointers.begin();it!=loc->parent->pointers.end();it++) children.push_back(*it);
+		for (vector<struct node*>::iterator it = loc->pointers.begin();it!=loc->pointers.end();it++) children.push_back(*it);
+		split(loc->parent, median, children);
 		delete loc;
 	}
 }
@@ -135,7 +149,7 @@ bool btree::insert(int num){
 	}else{
 		cout << "Split required"<<endl;
 		vector<struct node*> temp;
-		split(loc, num, temp, temp);
+		split(loc, num, temp);
 		return true;		
 	}
 }
@@ -173,14 +187,11 @@ string btree::jsonAux(node *cur){
 	ss << "{";
 	ss << "\"keys\": [";
 	int count = 0;
-	if (cur->parent != NULL) cout << "Parent: "<<cur->parent->keys[0]<<", keys: ";
 	for (vector<int>::iterator it = cur->keys.begin(); it!= cur->keys.end() && count <= order;it++){
-		cout << (*it)<<" ";
 		ss << "\"" << *it << "\"";
 		count ++;
 		if (*it!=cur->keys.back()) ss << ", ";
 	}
-	cout << endl;
 	ss << "], \"children\": [";
 	for (vector<struct node*>::iterator it = cur->pointers.begin(); it!=cur->pointers.end();it++){
 		ss << jsonAux(*it);
