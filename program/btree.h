@@ -9,6 +9,7 @@ using namespace std;
 struct node{
 	vector<int> keys;
 	vector<struct node*> pointers;
+	node *parent;
 };
 
 class btree{
@@ -16,7 +17,7 @@ class btree{
 		int order;
 		node *root;
 		string jsonAux(node *cur);
-		void split(node *loc, int num);
+		void split(node *loc, int num, vector<struct node*> leftData, vector<struct node*> rightData);
 		node *traverse(node *cur, int num);
 	public:
 		btree(int treeOrd);

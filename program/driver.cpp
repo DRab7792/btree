@@ -73,9 +73,9 @@ void batch(ostream &out, string argStr){
 			cout << curCmd<<endl;
 			if (strcmp(curCmd, "\n") > 0) handleCommand(out, curCmd, 100);
 		}
-		out << "End File";
+		out << "End File"<<endl;
 	}else{
-		out << "File not found";
+		out << "File not found"<<endl;
 	}
 	in.close();
 }
