@@ -21,6 +21,7 @@ function renderJSObjsToD3(nodeData, edgeData, svgSelector) {
     edgeRefs.push({
       source: nodeData[e.source],
       target: nodeData[e.target],
+      edgeclass: e.edgeclass,
       label: e.label,
       id: e.id !== undefined ? e.id : (idCounter++ + "|" + e.source + "->" + e.target)
     });
@@ -60,6 +61,18 @@ function renderDagreObjsToD3(graphData, svgSelector) {
       .attr('orient', 'auto')
       .append('svg:path')
       .attr('d', 'M 0 0 L 10 5 L 0 10 z');
+   svg.append('svg:defs').append('svg:marker')
+      .attr('id', 'selectArrow')
+      .attr('viewBox', '0 0 10 10')
+      .attr('refX', 8)
+      .attr('refY', 5)
+      .attr('markerUnits', 'strokewidth')
+      .attr('markerWidth', 8)
+      .attr('markerHeight', 5)
+      .attr('orient', 'auto')
+      .append('svg:path')
+      .attr('d', 'M 0 0 L 10 5 L 0 10 z');
+  
   }
 
   svg.selectAll("g").remove();
@@ -96,17 +109,23 @@ function renderDagreObjsToD3(graphData, svgSelector) {
   var edgeEnter = edges
     .enter()
     .append("g")
-    .attr("class", "edge")
+    .attr("class", function (d) {
+      console.log(d);
+      if (d.edgeclass) {
+        return "edge " + d.edgeclass;
+      } else {
+        return "edge";
+      }
+    })
     .attr("id", function (d) {
       return "edge-" + d.id;
     })
     .each(function (d) {
       d.nodePadding = 0;
     });
-
   edgeEnter
-    .append("path")
-    .attr("marker-end", "url(#arrowhead)");
+    .append("path");
+  //  .attr("marker-end", "url(#selectArrow)");
   addLabels(edgeEnter);
   edges.exit().remove();
 

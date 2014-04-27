@@ -11,6 +11,7 @@ struct node{
 	vector<int> keys;
 	vector<struct node*> pointers;
 	node *parent;
+	bool selected;
 };
 
 class btree{
@@ -19,6 +20,7 @@ class btree{
 		node *root;
 		string jsonAux(node *cur);
 		void split(node *loc, int num, vector<struct node*> data);
+		void unMarkNodes(node *cur);
 		node *traverse(node *cur, int num);
 	public:
 		btree(int treeOrd);

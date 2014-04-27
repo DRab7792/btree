@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+DOCTYPE html>
 
 <html lang="en">
 
@@ -84,25 +83,7 @@
 
   function handleGraph(data) {
       var dataParsed = (data!=null) ? data: 
-      [
-        {
-          "keys": ["32", "64", "128"], 
-          "children": [
-            {
-              "keys": ["16", "24", "30"],
-              "children": []
-            },
-            {
-              "keys": ["72", "88", "95"],
-              "children": []
-            },
-            {
-              "keys": ["134", "162", "184"],
-              "children": []
-            }
-          ]
-        }
-      ];
+      [];
       // var dataParsed = JSON.parse(data);
 
       var nodes = {};
@@ -124,10 +105,13 @@
       else labelStr += data.keys[i];
     };
 
+    var selected = (data.selected=="true")? "selected": "";
     var newNode = {
       label: labelStr,
-      id: nodeID + ""
+      id: nodeID + "",
+      nodeclass: selected
     };
+
 
     // var classes = ["type-" + data.data.type];
     // if (data.data.ne) {
@@ -140,12 +124,16 @@
 
     data.children.forEach(function (child) {
       var newChild = populate(child, nodes, edges);
-
+      var selected = "";
+      if (newNode.nodeclass=="selected" && newChild.nodeclass=="selected") selected = "selected";
+      console.log(newNode.id+"-"+newChild.id+", "+selected);
       edges.push({
         source: newNode.id,
         target: newChild.id,
+	edgeclass: selected,
         id: newNode.id + "-" + newChild.id
       });
+
     });
 
     return newNode;

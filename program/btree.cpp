@@ -4,6 +4,14 @@ btree::btree(int treeOrd){
 	order = treeOrd;
 	root = new node();
 	root->parent = NULL;
+	unMarkNodes(root);
+}
+
+void btree::unMarkNodes(node *cur){
+	cur->selected = false;
+	for (vector<struct node*>::iterator it=cur->pointers.begin(); it!=cur->pointers.end(); it++){
+		return unMarkNodes(*it);
+	}
 }
 
 bool btree::deleteNode(int num){
@@ -104,7 +112,6 @@ void btree::split(node *loc, int num, vector<struct node*> data){
 			}
 		}
 		delete loc;
-		cout << "99 Problems"<<endl;
 	}else{
 		for (vector<struct node*>::iterator it = loc->parent->pointers.begin(); it!=loc->parent->pointers.end();){  
 			if ((*it)==loc){
@@ -152,6 +159,7 @@ bool btree::insert(int num){
 		split(loc, num, temp);
 		return true;		
 	}
+	unMarkNodes(root);
 }
 
 node *btree::traverse(node *cur, int num){
@@ -179,7 +187,33 @@ node *btree::traverse(node *cur, int num){
 }
 
 bool btree::select(int num){
-
+	int reads = 1;
+	bool found = false;
+	node *cur = root;
+	while (!found || cur->pointers.size()==0){
+		cur->selected = true;
+		int back = cur->keys.back();
+		int front  = cur->keys.front();
+		if (back >= num && front <= num){
+			int last = 0;
+			for (vector<int>::iterator it=cur->keys.begin(); it!= cur->keys.end(); it++){
+					
+				if (*it == num){
+					found = true;
+					break;
+				}
+				last = (*it);
+			}
+		}else if (front > num){
+			reads ++;
+			cur = cur->pointers.front();
+		}else if (back < num){
+			reads ++;
+			cur = cur->pointers.back();
+		}
+	}
+	cout << "Physical Reads: "<<reads<<endl;
+	return found;
 }
 
 string btree::jsonAux(node *cur){
@@ -192,7 +226,13 @@ string btree::jsonAux(node *cur){
 		count ++;
 		if (*it!=cur->keys.back()) ss << ", ";
 	}
-	ss << "], \"children\": [";
+	ss << "],";
+	if (cur->selected){
+		ss << "\"selected\":\"true\"";
+	}else{
+		ss << "\"selected\":\"false\"";
+	} 
+	ss << ", \"children\": [";
 	for (vector<struct node*>::iterator it = cur->pointers.begin(); it!=cur->pointers.end();it++){
 		ss << jsonAux(*it);
 		if (*it != cur->pointers.back()) ss << ", ";
