@@ -10,7 +10,7 @@ btree::btree(int treeOrd){
 void btree::unMarkNodes(node *cur){
 	cur->selected = false;
 	for (vector<struct node*>::iterator it=cur->pointers.begin(); it!=cur->pointers.end(); it++){
-		return unMarkNodes(*it);
+		unMarkNodes(*it);
 	}
 }
 
@@ -133,6 +133,7 @@ bool btree::insert(int num){
 	//Nothing in tree
 	if (loc->keys.size()==0){
 		loc->keys.push_back(num);
+		unMarkNodes(root);
 		return true;
 	//Leaf node is not full
 	}else if (loc->keys.size() < order){
@@ -151,15 +152,16 @@ bool btree::insert(int num){
 		if (!inserted) loc->keys.push_back(num);
 		//for (vector<int>::iterator it = loc->keys.begin();it!= loc->keys.end();it++) cout << *it << " ";
 		//cout <<endl;
+		unMarkNodes(root);
 		return true;
 	//Leaf node is full
 	}else{
 		cout << "Split required"<<endl;
 		vector<struct node*> temp;
 		split(loc, num, temp);
+		unMarkNodes(root);
 		return true;		
 	}
-	unMarkNodes(root);
 }
 
 node *btree::traverse(node *cur, int num){
@@ -187,32 +189,49 @@ node *btree::traverse(node *cur, int num){
 }
 
 bool btree::select(int num){
+	unMarkNodes(root);
 	int reads = 1;
 	bool found = false;
 	node *cur = root;
-	while (!found || cur->pointers.size()==0){
+	while (!found && cur!= NULL){
 		cur->selected = true;
 		int back = cur->keys.back();
 		int front  = cur->keys.front();
+		bool hasKids = cur->pointers.size()!=0;
 		if (back >= num && front <= num){
 			int last = 0;
+			int count = 0;
 			for (vector<int>::iterator it=cur->keys.begin(); it!= cur->keys.end(); it++){
-					
 				if (*it == num){
 					found = true;
 					break;
+				}else if (num > last && num < *it && hasKids){
+					reads ++;
+					cur = cur->pointers[count];
+					break;
+				}else if (num > last && num < *it){
+					cur = NULL;
+					break;
 				}
 				last = (*it);
+				count ++;
 			}
-		}else if (front > num){
+		}else if (front > num && hasKids){
 			reads ++;
 			cur = cur->pointers.front();
-		}else if (back < num){
+		}else if (back < num && hasKids){
 			reads ++;
 			cur = cur->pointers.back();
+		}else{
+			cur = NULL;
 		}
 	}
-	cout << "Physical Reads: "<<reads<<endl;
+	if (found){
+		cout << "Physical Reads: "<<reads<<endl;
+	}else{
+		cout << "Element not found"<<endl;
+		unMarkNodes(root);
+	}
 	return found;
 }
 
