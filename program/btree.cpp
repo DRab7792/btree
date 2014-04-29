@@ -1,10 +1,11 @@
 #include "btree.h"
 
 btree::btree(int treeOrd){
-	order = treeOrd;
+	order = treeOrd--;
 	root = new node();
 	root->parent = NULL;
 	unMarkNodes(root);
+	boundary = ((order+1)/2) -1;
 }
 
 void btree::unMarkNodes(node *cur){
@@ -14,8 +15,176 @@ void btree::unMarkNodes(node *cur){
 	}
 }
 
-bool btree::deleteNode(int num){
+bool btree::isUnderflowing(node *cur) {return cur->keys.size() < boundary;}
+bool btree::vergeUnder(node *cur) {return cur->keys.size()== boundary;}
 
+void btree::concat(node *parent, node *left, node *right){
+	if (right->pointers.size() > 0)left->pointers.insert(left->pointers.end(), right->pointers.begin(), right->pointers.end());
+	vector<int>::iterator key = parent->keys.begin();
+	vector<struct node*>::iterator it;
+	for (it = parent->pointers.begin(); it!= parent->pointers.end(); it++){
+		if (*it==left){
+			break;
+		}
+		key++;
+	}
+	if (it!= parent->pointers.end() && (it+1)!= parent->pointers.end()){
+		it ++;
+		parent->pointers.erase(it);
+		int temp = *key;
+		parent->keys.erase(key);
+		left->keys.push_back(temp);
+		if (right->keys.size()>0) left->keys.insert(left->keys.end(), right->keys.begin(), right->keys.end());
+	}
+}
+
+void btree::RLDistribute(node *parent, node *left, node *right){
+	vector<int>::iterator key = parent->keys.begin();
+	for (vector<struct node*>::iterator it = parent->pointers.begin(); it!= parent->pointers.end(); it++){
+		if (*it==left) break;
+		key++;
+	}
+	//Move keys
+	int parentKey = *key;
+	left->keys.push_back(parentKey);
+	int rightKey = right->keys.front();
+	right->keys.erase(right->keys.begin());
+	parent->keys.insert(key, rightKey);
+	for (vector<int>::iterator it= parent->keys.begin(); it!=parent->keys.end(); it++){
+		if (*it == parentKey){
+			parent->keys.erase(it);
+			break;
+		}
+	}
+	if (right->pointers.size()>0){
+		node *temp = right->pointers.front();
+		left->pointers.push_back(temp);
+		right->pointers.erase(right->pointers.begin());
+	}
+}
+
+void btree::LRDistribute(node *parent, node *left, node *right){
+	vector<int>::iterator key = parent->keys.begin();
+	for (vector<struct node*>::iterator it = parent->pointers.begin(); it!= parent->pointers.end(); it++){
+		if (*it==left) break;
+		key++;
+	}
+	//Move keys
+	int parentKey = *key;
+	right->keys.insert(right->keys.begin(), parentKey);
+	int leftKey = left->keys.back();
+	left->keys.pop_back();
+	parent->keys.insert(key, leftKey);
+	for (vector<int>::iterator it= parent->keys.begin(); it!=parent->keys.end(); it++){
+		if (*it == parentKey){
+			parent->keys.erase(it);
+			break;
+		}
+	}
+	if (left->pointers.size()>0){
+		node *temp = left->pointers.back();
+		right->pointers.insert(right->pointers.begin(), temp);
+		left->pointers.pop_back();
+	}
+}
+
+void btree::adjust(node *loc){
+	bool underflowing  = isUnderflowing(loc);
+	node *rightSib = NULL;
+	node *parent = loc->parent;
+	node *leftSib = NULL;
+	//Get left and Right siblings
+	if (parent!= NULL){
+		for (vector<struct node*>::iterator it = parent->pointers.begin(); it!=parent->pointers.end(); it ++){
+			if (*it==loc){
+				if (it != parent->pointers.begin()){
+					vector<struct node*>::iterator left = it;
+					left --;
+					leftSib = *left;
+				}
+				if (it!=parent->pointers.end()){
+					vector<struct node*>::iterator right = it;
+					right ++;
+					if (right!= parent->pointers.end()) rightSib = *right; 
+				}
+				break;
+			}
+		}
+	}
+	//Begin adjusting
+	if (underflowing){
+		if (loc == root){
+			if (loc->pointers.size()==1){
+				root = loc->pointers[0];
+				loc->pointers[0]->parent = NULL;
+				delete loc;
+			}
+		}else if (leftSib != NULL && !vergeUnder(leftSib)){
+			LRDistribute(parent, leftSib, loc);	
+		}else if (rightSib != NULL && !vergeUnder(rightSib)){
+			RLDistribute(parent, loc, rightSib);
+		}else{
+			if (rightSib != NULL){
+				concat(parent, loc, rightSib);
+			}else{
+				concat(parent, leftSib, loc);
+			}
+		}
+	}else{
+	}
+}
+
+bool btree::deleteNode(int num){
+	unMarkNodes(root);
+	node *loc = traverse(root, num);
+	bool exists = false;
+	bool hasKids = loc->pointers.size()!=0;
+	vector<int>::iterator curKey;
+	vector<struct node*>::iterator left, right;
+	if (hasKids){
+		left = loc->pointers.begin();
+		right = loc->pointers.begin();
+		right++;
+	}
+	for (vector<int>::iterator it=loc->keys.begin(); it!=loc->keys.end(); it++){
+		if (*it == num){ 
+			exists = true;
+			curKey = it;
+			break;
+		}
+		if (hasKids){
+			left ++;
+			right ++;
+		}
+	}
+	if (!exists){
+		cout << "Element is not in tree";
+		return false;
+	}
+	//If the element does exist begin deletion
+	if (!hasKids){
+		//Erase leaf and adjust
+		loc->keys.erase(curKey);
+		adjust(loc);
+		return true;
+	}else{
+		//Find the leftmost leaf in the right subtree
+		node *leftLeaf = *right;
+		while (leftLeaf->pointers.size()!=0){
+			leftLeaf = leftLeaf->pointers[0];
+		}	
+		int temp = leftLeaf->keys[0];
+		leftLeaf->keys.erase(leftLeaf->keys.begin());
+		loc->keys.insert(curKey, temp);
+		for (vector<int>::iterator it = loc->keys.begin(); it!=loc->keys.end(); it++){
+			if (*it == num){
+				loc->keys.erase(it);
+				break;
+			}
+		}
+		adjust(leftLeaf);
+		return true;
+	}
 }
 
 void btree::split(node *loc, int num, vector<struct node*> data){
@@ -137,7 +306,6 @@ bool btree::insert(int num){
 		return true;
 	//Leaf node is not full
 	}else if (loc->keys.size() < order){
-		cout << "split not required"<<endl;
 		bool inserted = false;
 		for (vector<int>::iterator it = loc->keys.begin(); it != loc->keys.end(); it++){ 
 			if ((*it) > num){
@@ -156,7 +324,6 @@ bool btree::insert(int num){
 		return true;
 	//Leaf node is full
 	}else{
-		cout << "Split required"<<endl;
 		vector<struct node*> temp;
 		split(loc, num, temp);
 		unMarkNodes(root);
@@ -229,7 +396,7 @@ bool btree::select(int num){
 	if (found){
 		cout << "Physical Reads: "<<reads<<endl;
 	}else{
-		cout << "Element not found"<<endl;
+		cout << "Element not found";
 		unMarkNodes(root);
 	}
 	return found;
