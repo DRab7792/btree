@@ -2,3 +2,4 @@ In order for this website to run properly on a LAMPP server make sure the btree 
 chmod 777 btree
 chmod 777 jsonRes
 chmod 777 webInstr
+Then go into handler.php and correct the location of webInstr
