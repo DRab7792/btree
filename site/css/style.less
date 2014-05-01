@@ -27,6 +27,11 @@ body {
   background-size: 100%;
 }
 
+.locate:hover{
+  opacity: .8;
+  cursor: pointer;
+}
+
 #contents{
   li{
     margin: 5px 0px;
@@ -68,10 +73,38 @@ body {
   padding: 15px;
   border-bottom: 1px solid @black;
 }
+p,img{
+  margin:15px 0px;
+}
+h4.section{
+  border: 0px;
+  text-align: center;
+  font-size: 30px;
+}
+
+#github img{
+  width: 50px;
+  height: 50px;
+}
+
+#github:hover{
+  opacity: .8;
+  cursor: pointer;
+}
+
+ol.algorithm li{
+  margin: 5px 0px;
+}
+
+h5{
+  font-size: 24px;
+  margin: 15px 0px 0px;
+}
 
 h3{
   text-align:center;
   display:block;
+  margin-bottom: 15px;
   font-size: 50px;
   position: relative;
   text-shadow: 2px 2px 0px @green;
@@ -79,6 +112,16 @@ h3{
   font-family: arial;
 }
 
+.left{
+  width: 48%;
+  float: left;
+
+}
+
+.right{
+  width: 48%;
+  float: right;
+}
 h1{
   text-align:center;
   display:block;

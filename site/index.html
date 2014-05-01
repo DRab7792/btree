@@ -26,29 +26,137 @@ DOCTYPE html>
   <div id="contents" class="section">
     <h3>Table of Contents</h3>
     <ol>
-      <li>What is a B Tree?</li>
-      <li>What is a B+ Tree?</li>
-      <li>Why are they important?</li>
-      <li>The algorithms
+      <li id="btree" class="locate">What is a B Tree?</li>
+      <li id="b+tree" class="locate">What is a B+ Tree?</li>
+      <li id="importance" class="locate">Why are they important?</li>
+      <li id="structures" class="locate">Data Structures</li>
+      <li id="algorithms">The Algorithms
         <ul>
-          <li>Insert</li>
-          <li>Search</li>
-          <li>Delete</li>
+          <li id="insert" class="locate">Insert</li>
+          <li id="search" class="locate">Search</li>
+          <li id="delete" class="locate">Delete</li>
         </ul>
       </li>
-      <li>Implementation and Testing</li>
+      <li id="implementation" class="locate">Implementation and Testing</li>
+      <li id="bugs" class="locate">Bugs</li>
     </ol>
   </div>
-  <div id="attach">
-    <textarea id="commands"></textarea>
-    <svg class="main-svg" id="svg-canvas"></svg>
+  <div id="btree" class="section">
+    <h3>What is a B Tree?</h3>
+    <p class="left">A B tree (not to be confused with a binary search tree) of order m has the following properties:
+    </p><br clear="all">
+    <ol class="left">
+      <li>The root is either a leaf, or an interior node with 2...m children</li>
+      <li>All interior nodes have between d and 2d keys</li>
+      <li>All nodes have up to m-1 keys</li>
+      <li>All internal nodes as well as the root node will have one more child than keys</li>
+      <li>All leaves are at the same depth</li>
+    </ol>
+    <img class="right" src="img/btree.gif"><br clear="all">
   </div>
+  <div id="b+tree" class="section">
+    <h3>What is a B+ Tree?</h3>
+    <p>A B+ tree of order m is a little different. In B+ trees the leaf nodes are linked. Also data in B+ trees are only stored in leaf nodes. Since all the data is stored in the leaf nodes the tree structure requires less memory than a B tree.
+    </p>
+    <img src="img/bplusvsbtree.png"><br clear="all">
+  </div>
+  <div id="importance" class="section">
+    <h3>Why are they important?</h3>
+    <ul>
+      <li>Filesystems
+        <p>FAT (File Allocation Table), Ext4, NTFS, and HFS+ all use B-Trees. Each entry in the tree represents a disk block, what file it's apart of and where the next disk block is for that file.</p>
+      </li>
+      <li>Databases
+        <img src="img/tablescan.png">
+      </li>
+    </ul>
+  </div>
+  <div id="structures" class="section">
+    <h3>Data Structures</h3>
+    <img src="img/nodestruct.png"><br>
+    <img src="img/btreeClass.png">
+  </div>
+  <div id="algorithms" class="section">
+    <h3>The Algorithms</h3>
+    <h4 id="insert" class="section">Insert</h4>
+    <ol class="algorithm">
+      <li>Traverse the tree to find out where new key should be inserted</li>
+      <li>If the node contains fewer than the maximum legal number of elements, then there is room for the new element. Insert the new element in the node, keeping the node's elements ordered.</li>
+      <li>Otherwise the node is full, evenly split it into two nodes so:
+        <ol>
+          <li>A single median is chosen from among the leaf's elements and the new element.</li>
+          <li>Values less than the median are put in the new left node and values greater than the median are put in the new right node, with the median acting as a separation value.</li>
+          <li>The separation value is inserted in the node's parent, which may cause it to be split, and so on. If the node has no parent (i.e., the node was the root), create a new root above this node (increasing the height of the tree).</li>
+        </ol>
+      </li>
+    </ol>
+    <h5>Time Complexity</h5>
+    <p>O(log m (n)) - Time to select which branch to work on, as well as the time to split nodes<br>
+    O(m) - Time to fix up a node<br>
+    O(m*log m (n)) - Time complexity<br>
+    log m (n) = log(m) * log(n), O(m*log(m)*log(n))<br>
+    Since the order m of a B Tree does not change as n does this can be simplified to O(log(n))<br>
+    Best Case = Worst Case = O (log(n))</p>
+    <h4 id="search" class="section">Search</h4>
+    <ol class="algorithm">
+      <li>Traverse the tree to find out which node the key is in</li>
+      <li>Traverse the node to find the key</li>
+    </ol>
+    <h5>Time Complexity</h5>
+    <p>O(log m (n)) - Find node<br>
+    O(m) - Find key in node<br>
+    O(m*log m (n)) - Time complexity<br>
+    log m (n) = log(m) * log(n), O(m*log(m)*log(n))<br>
+    Since the order m of a B Tree does not change as n does this can be simplified to O(log(n))<br>
+    Best Case = Worst Case = O (log(n))</p>
+    <h4 id="delete" class="section">Delete</h4>
+    <ol class="algorithm">
+      <li>Traverse the tree to find the key to delete</li>
+      <li>If it is in a leaf node:
+        <ol>
+          <li>Delete key</li>
+          <li>If the node is underflowing, adjust the tree by redistriuting keys or concatenating nodes</li>
+        </ol>
+      </li>
+      <li>If it is in an internal node:
+        <ol>
+          <li>Delete key</li>
+          <li>Find the leftmost key in the right subtree and put it in place of the deleted key</li>
+          <li>If the node is underflowing, adjust the tree by redistriuting keys or concatenating nodes</li>
+        </ol>
+      </li>
+    </ol>
+    <h5>Time Complexity</h5>
+    <p>Same as Insert<br>
+    Best Case = Worst Case = O (log(n))</p>
+  </div>
+  <div id="implementation" class="section">
+    <h3>Implementation and Testing</h3>
+    <div id="attach">
+      <textarea id="commands"></textarea>
+      <svg class="main-svg" id="svg-canvas"></svg>
+    </div>
+    <img src="img/implementation.jpg">
+    <div id="github"><img src="img/github.png"> Github Link to Repository</div>
+  </div>
+  <div id="bugs" class="section">
+    <h3>Bugs</h3>
+    Demo tree #4 is incorrect due to some insert bugs
+  </div>  
 </div>
 
 
 
 <script>
-
+  $("#github").click(function(){
+    window.open('https://github.com/DRab7792/btree','_blank');
+  });
+  $(".locate").click(function(){
+    var loc = $(this).attr("id");
+    $('html, body').animate({
+          scrollTop: $("#"+loc+".section").offset().top
+      }, 500);
+  });
   $("#commands").text("> ");
   $("#commands").keyup(function(e){
     var code = (e.keyCode ? e.keyCode : e.which);
